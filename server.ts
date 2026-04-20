@@ -23,8 +23,9 @@ async function startServer() {
   app.get("/api/quote/:ticker", async (req, res) => {
     const { ticker } = req.params;
     try {
-      console.log(`[API] Fetching quote for: ${ticker}`);
-      const result = await yahooFinance.quote(ticker) as any;
+      const tickerUpper = (ticker || "").toString().toUpperCase();
+      console.log(`[API] Fetching quote for: ${tickerUpper}`);
+      const result = await yahooFinance.quote(tickerUpper) as any;
       
       if (!result) {
         return res.status(404).json({ error: "Ticker not found" });
@@ -34,6 +35,7 @@ async function startServer() {
         price: result.regularMarketPrice,
         change: result.regularMarketChange,
         changePercent: `${result.regularMarketChangePercent?.toFixed(2)}%`,
+        previousClose: result.regularMarketPreviousClose,
         name: result.longName || result.shortName,
         source: 'YAHOO_FINANCE',
         rawResponse: result

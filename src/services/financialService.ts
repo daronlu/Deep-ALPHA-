@@ -7,6 +7,7 @@ export interface StockQuote {
   price: number;
   change: string;
   changePercent: string;
+  previousClose?: number;
   source: 'ALPHA_VANTAGE' | 'MOCK';
   error?: string;
   rawResponse?: any; // Added for debugging/trust
@@ -44,6 +45,7 @@ export const financialService = {
         price: data.price,
         change: data.change?.toString() || '0',
         changePercent: data.changePercent || '0%',
+        previousClose: data.previousClose,
         source: 'ALPHA_VANTAGE', // Keeping for UI compatibility
         rawResponse: data.rawResponse
       };
