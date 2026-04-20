@@ -196,13 +196,13 @@ const MOCK_DB: Record<string, InvestmentData> = {
   NVDA: {
     ticker: 'NVDA',
     name: 'NVIDIA Corporation',
-    currentPrice: 242.15,
+    currentPrice: 147.16,
     historicalData: [
-      { date: '2025-Q1', price: 135.00 },
-      { date: '2025-Q2', price: 158.00 },
-      { date: '2025-Q3', price: 184.00 },
-      { date: '2025-Q4', price: 212.00 },
-      { date: 'Current', price: 242.15 },
+      { date: '2024-Q3', price: 118.00 },
+      { date: '2024-Q4', price: 132.00 },
+      { date: '2025-Q1', price: 140.00 },
+      { date: '2025-Q2', price: 145.00 },
+      { date: 'Current', price: 147.16 },
     ],
     reliabilityScore: 94,
     reliabilityReasons: ["伺服器端物流驗證", "超大規模業者資本支出對齊", "TSMC 節點利用率審計"],
@@ -220,8 +220,8 @@ const MOCK_DB: Record<string, InvestmentData> = {
         detail: { title: "估值矩陣", description: "溢價由 400%+ 的年度同比增長細分市場所支持。", source: "量化模型", confidence: "88%" }
       },
       { 
-        label: "目標價", value: "$265.00", subText: "分析師矩陣", accent: "text-amber-400", icon: <Target className="w-5 h-5" />,
-        range: { min: "$210.00", avg: "$265.00", max: "$310.00" },
+        label: "目標價", value: "$185.00", subText: "分析師矩陣", accent: "text-amber-400", icon: <Target className="w-5 h-5" />,
+        range: { min: "$140.00", avg: "$185.00", max: "$210.00" },
         detail: { title: "共識預測", description: "反映 Blackwell 晶片發佈影響及世代升級週期。目標價上調以反映基礎設施資本支出增加。", source: "Goldman/JPM 共識", confidence: "91%" }
       }
     ],
@@ -260,13 +260,13 @@ const MOCK_DB: Record<string, InvestmentData> = {
   GOOG: {
     ticker: 'GOOG',
     name: 'Alphabet Inc.',
-    currentPrice: 358.40,
+    currentPrice: 192.40,
     historicalData: [
-      { date: '2025-Q1', price: 188.00 },
-      { date: '2025-Q2', price: 215.00 },
-      { date: '2025-Q3', price: 262.00 },
-      { date: '2025-Q4', price: 310.00 },
-      { date: 'Current', price: 358.40 },
+      { date: '2024-Q3', price: 158.00 },
+      { date: '2024-Q4', price: 165.00 },
+      { date: '2025-Q1', price: 178.00 },
+      { date: '2025-Q2', price: 184.00 },
+      { date: 'Current', price: 192.40 },
     ],
     reliabilityScore: 91,
     reliabilityReasons: ["廣告技術支出校準", "GCP 積壓訂單分析", "搜索壟斷延遲審計"],

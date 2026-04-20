@@ -8,7 +8,7 @@ export interface StockQuote {
   change: string;
   changePercent: string;
   previousClose?: number;
-  source: 'ALPHA_VANTAGE' | 'MOCK';
+  source: 'ALPHA_VANTAGE' | 'YAHOO_FINANCE' | 'MOCK';
   error?: string;
   rawResponse?: any; // Added for debugging/trust
 }
@@ -46,7 +46,7 @@ export const financialService = {
         change: data.change?.toString() || '0',
         changePercent: data.changePercent || '0%',
         previousClose: data.previousClose,
-        source: 'ALPHA_VANTAGE', // Keeping for UI compatibility
+        source: data.source || 'YAHOO_FINANCE',
         rawResponse: data.rawResponse
       };
     } catch (error) {
