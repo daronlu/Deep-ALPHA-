@@ -3,9 +3,9 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import YahooFinance from 'yahoo-finance2';
+import cors from 'cors';
 
 // Create a safe instance for v2/v3 compatibility
-// Use the default export if constructor is needed, or the exported instance directly
 const yahooFinance = (YahooFinance as any).default ? new (YahooFinance as any).default() : new (YahooFinance as any)();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,6 +15,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Enable CORS for frontend flexibility
+  app.use(cors());
+  
   // API Route: Real-time Quote Proxy
   // Using Yahoo Finance for superior accuracy and split adjustment
   app.get("/api/quote/:ticker", async (req, res) => {
