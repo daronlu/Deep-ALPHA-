@@ -466,7 +466,7 @@ export default function App() {
       const base = { ...MOCK_DB[ticker] };
       
       // Strict API Priority: NO JITTER IF API SUCCESS
-      if (realQuote && realQuote.source === 'ALPHA_VANTAGE') {
+      if (realQuote && (realQuote.source === 'ALPHA_VANTAGE' || realQuote.source === 'YAHOO_FINANCE')) {
         base.currentPrice = realQuote.price;
         base.historicalData = base.historicalData.map(d => 
           d.date === 'Current' || d.date === 'NOW' ? { ...d, price: realQuote.price } : d
@@ -848,7 +848,7 @@ export default function App() {
                   <span className="text-xl font-mono font-black text-emerald-400 tracking-tighter">
                     ${data?.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </span>
-                  {data?.reliabilityReasons.includes("實時 API 數據校驗通過") ? (
+                  {data?.reliabilityReasons.includes("實時 API 數據校驗通過") || data?.ticker === activeTicker && !apiError ? (
                     <div className="flex items-center gap-2">
                        <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-500 text-[8px] uppercase tracking-widest font-black border border-emerald-500/30">
                         Live Market
