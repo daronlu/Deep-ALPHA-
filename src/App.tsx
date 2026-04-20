@@ -833,11 +833,23 @@ export default function App() {
               <div className="flex items-center gap-3 mt-1">
                 <p className="text-xs text-slate-500 font-medium">{data?.name}</p>
                 <div className="w-1 h-1 rounded-full bg-slate-800" />
-                <span className="text-xl font-mono font-black text-emerald-400 tracking-tighter">
-                  ${data?.currentPrice.toLocaleString()}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-mono font-black text-emerald-400 tracking-tighter">
+                    ${data?.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </span>
+                  {data?.reliabilityReasons.includes("實時 API 數據校驗通過") ? (
+                    <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-500 text-[8px] uppercase tracking-widest font-black border border-emerald-500/30">
+                      Live
+                    </span>
+                  ) : (
+                    <span className="px-1.5 py-0.5 rounded-sm bg-amber-500/10 text-amber-500/60 text-[8px] uppercase tracking-widest font-black border border-amber-500/10">
+                      2026 Proj
+                    </span>
+                  )}
+                </div>
+                <div className="w-1 h-1 rounded-full bg-slate-800 ml-1" />
                 <span className="text-[10px] text-emerald-500/60 font-bold bg-emerald-500/5 px-2 py-0.5 rounded-full border border-emerald-500/10">
-                  +2.45%
+                  Daily Sync
                 </span>
               </div>
             </div>

@@ -17,7 +17,7 @@ export const financialService = {
   async fetchRealtimeQuote(ticker: string): Promise<StockQuote | null> {
     const apiKey = (import.meta as any).env.VITE_ALPHA_VANTAGE_KEY;
     if (!apiKey) {
-      console.warn('API Key missing: please add VITE_ALPHA_VANTAGE_KEY to environment.');
+      console.warn('API Key missing or env variable not found.');
       return null;
     }
 
