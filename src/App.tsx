@@ -446,7 +446,7 @@ export default function App() {
 
   // Load / Refresh Data Logic
   // Constants
-  const BUILD_TIME = "2026-04-20 17:01"; // Updated per edit
+  const BUILD_TIME = "2026-04-20 17:10"; // Server Script Patch
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -844,7 +844,8 @@ export default function App() {
                 <p className="text-[10px] text-amber-400 font-mono leading-none">警告: {apiError}</p>
                 <p className="text-[8px] text-slate-500 leading-tight">
                     {apiError === 'SYMBOL_NOT_FOUND' ? '找不到該標的代號' : 
-                    apiError === 'CONNECTION_FAILED' ? '無法連通私有數據中心 (可能受 CORS 限制)。靜態模式下建議手動比對。' : '網絡或系統連動異常'}
+                    apiError === 'CONNECTION_FAILED' ? '無法連通數據引擎。' : 
+                    apiError === 'API_UNAVAILABLE' ? '數據中心啟動中或受限，請點擊「外部比對」。' : '連動異常'}
                 </p>
                 <div className="flex gap-2 mt-2">
                   <button 

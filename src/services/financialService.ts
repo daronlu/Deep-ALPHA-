@@ -28,14 +28,15 @@ export const financialService = {
         : ''; // Relative for local/dev
         
       const response = await fetch(`${apiBase}/api/quote/${ticker}`);
-      if (!response.ok) {
-        const errorData = await response.json();
+      const contentType = response.headers.get('content-type');
+      
+      if (!response.ok || !contentType || !contentType.includes('application/json')) {
         return {
           price: 0,
           change: '0',
           changePercent: '0%',
           source: 'MOCK',
-          error: errorData.error || 'SERVER_ERROR'
+          error: 'API_UNAVAILABLE'
         };
       }
       
