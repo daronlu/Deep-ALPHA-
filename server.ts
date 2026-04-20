@@ -5,8 +5,7 @@ import { fileURLToPath } from "url";
 import YahooFinance from 'yahoo-finance2';
 import cors from 'cors';
 
-// Create a safe instance for v2/v3 compatibility
-const yahooFinance = (YahooFinance as any).default ? new (YahooFinance as any).default() : new (YahooFinance as any)();
+const yahooFinance = YahooFinance;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

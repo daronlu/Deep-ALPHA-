@@ -446,24 +446,23 @@ export default function App() {
 
   // Load / Refresh Data Logic
   // Constants
-  const BUILD_TIME = "2026-04-20 17:10"; // Server Script Patch
+  const BUILD_TIME = "2026-04-20 17:16"; // Core Logic Sync
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
     setApiError(null);
     
-    // 1. Try to fetch real-time quote first using Key
+    // 1. Try to fetch real-time quote first
     const realQuote = await financialService.fetchRealtimeQuote(ticker);
     
-    // Simulate real pipeline latency for analysis processing
-    await new Promise(r => setTimeout(r, 1200));
-    
-    let result: InvestmentData;
-    
-    // Handle error state from API
     if (realQuote?.error) {
-      setApiError(realQuote.error);
+       setApiError(realQuote.error);
+       if (window.location.hostname.includes('github.io')) {
+         console.warn(`[Deep ALPHA] Bridge Error: ${realQuote.error}. This usually means the Cloud Run server is still booting or protected.`);
+       }
     }
+
+    let result: InvestmentData;
 
     if (MOCK_DB[ticker]) {
       const base = { ...MOCK_DB[ticker] };
@@ -502,7 +501,8 @@ export default function App() {
       result = { ...base, lastUpdated: new Date().toISOString() };
     } else {
       // Dynamic generation for unknown tickers
-      const priceVal = (realQuote && realQuote.source === 'ALPHA_VANTAGE') ? realQuote.price : (Math.random() * 200 + 50);
+      const hasRealData = realQuote && (realQuote.source === 'ALPHA_VANTAGE' || realQuote.source === 'YAHOO_FINANCE');
+      const priceVal = hasRealData ? realQuote.price : (Math.random() * 200 + 50);
       const priceStr = priceVal.toFixed(2);
       
       result = {
@@ -516,8 +516,8 @@ export default function App() {
           { date: 'T-1', price: priceVal * 1.05 },
           { date: 'NOW', price: priceVal },
         ],
-        reliabilityScore: realQuote?.source === 'ALPHA_VANTAGE' ? 98 : 45,
-        reliabilityReasons: realQuote?.source === 'ALPHA_VANTAGE' 
+        reliabilityScore: hasRealData ? 98 : 45,
+        reliabilityReasons: hasRealData 
           ? ["實時 API 直接獲取", "數據一致性校驗優良"] 
           : ["AI 生成基礎預測", "缺乏市場實時鏈接"],
         kpis: [
