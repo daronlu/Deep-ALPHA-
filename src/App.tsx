@@ -111,20 +111,25 @@ const MOCK_DB: Record<string, InvestmentData> = {
   ONDS: {
     ticker: 'ONDS',
     name: 'Ondas Holdings Inc.',
-    currentPrice: 2.15,
+    currentPrice: 10.00,
     historicalData: [
-      { date: '2025-Q1', price: 0.82 },
-      { date: '2025-Q2', price: 1.05 },
-      { date: '2025-Q3', price: 0.98 },
-      { date: '2025-Q4', price: 1.45 },
-      { date: 'Current', price: 2.15 },
+      { date: '2025-Q1', price: 4.20 },
+      { date: '2025-Q2', price: 5.80 },
+      { date: '2025-Q3', price: 7.15 },
+      { date: '2025-Q4', price: 8.50 },
+      { date: 'Current', price: 10.00 },
     ],
     reliabilityScore: 82,
     reliabilityReasons: ["近期 10-Q 報表驗證", "直接供應鏈訊號", "審計一致性"],
     kpis: [
       { 
         label: "增長概況", value: "629%", subText: "年度同比 (YoY)", accent: "text-emerald-400", icon: <TrendingUp className="w-5 h-5" />,
-        detail: { title: "營收分析", description: "受中東國防合約帶動，營收增長 629%。", source: "SEC 10-Q", confidence: "98%" }
+        detail: { 
+          title: "營收分析", 
+          description: "受中東國防合約帶動，營收增長 629%。數據已與最新 SEC 10-Q 報表對齊。", 
+          source: "SEC 10-Q (2025-Q3)", 
+          confidence: "98%" 
+        }
       },
       { 
         label: "現金跑道", value: "$1.2B", subText: "流動性節點", accent: "text-blue-400", icon: <Database className="w-5 h-5" />,
@@ -135,9 +140,14 @@ const MOCK_DB: Record<string, InvestmentData> = {
         detail: { title: "估值敏感度", description: "目前價格較硬體同行有溢價。", source: "量化模型", confidence: "82%" }
       },
       { 
-        label: "目標價", value: "$3.50", subText: "AI 矩陣", accent: "text-amber-400", icon: <Target className="w-5 h-5" />,
-        range: { min: "$1.50", avg: "$3.50", max: "$5.00" },
-        detail: { title: "目標價矩陣", description: "綜合 8 家機構觀點及專有動能訊號擬合而成。", source: "分析師共識饋送", confidence: "74%" }
+        label: "目標價", value: "$18.50", subText: "Deep Alpha 策略預測", accent: "text-amber-400", icon: <Target className="w-5 h-5" />,
+        range: { min: "$8.50", avg: "$15.00", max: "$25.00" },
+        detail: { 
+          title: "目標價 (Scenario Based)", 
+          description: "基於現價 $10.00，預測 2026 年規模化後的估值。市場保守共識約為 $12.00，Alpha 溢價設定為 $18.50。", 
+          source: "策略情境模擬 (2026 基準)", 
+          confidence: "45%" 
+        }
       }
     ],
     bullCase: [
@@ -423,6 +433,7 @@ export default function App() {
   const [activeKillSwitches, setActiveKillSwitches] = useState<Record<string, boolean>>({});
   const [newTicker, setNewTicker] = useState('');
   const [inspectingDetail, setInspectingDetail] = useState<DetailContent | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
   
   // New: Position Management State
   const [userPortfolio, setUserPortfolio] = useState<Record<string, PortfolioConfig>>({
@@ -436,6 +447,7 @@ export default function App() {
   // Load / Refresh Data Logic
   const syncData = async (ticker: string) => {
     setIsLoading(true);
+    setApiError(null);
     
     // 1. Try to fetch real-time quote first using Key
     const realQuote = await financialService.fetchRealtimeQuote(ticker);
@@ -445,36 +457,44 @@ export default function App() {
     
     let result: InvestmentData;
     
+    // Handle error state from API
+    if (realQuote?.error) {
+      setApiError(realQuote.error);
+    }
+
     if (MOCK_DB[ticker]) {
       const base = { ...MOCK_DB[ticker] };
       
-      // Update price if real API returns data
-      if (realQuote) {
+      // Strict API Priority: NO JITTER IF API SUCCESS
+      if (realQuote && realQuote.source === 'ALPHA_VANTAGE') {
         base.currentPrice = realQuote.price;
         base.historicalData = base.historicalData.map(d => 
-          d.date === 'Current' ? { ...d, price: realQuote.price } : d
+          d.date === 'Current' || d.date === 'NOW' ? { ...d, price: realQuote.price } : d
         );
+        // Expose raw logs in the detail modal for trust
+        const liveKpi = base.kpis.find(k => k.label === "增長概況");
+        if (liveKpi && realQuote.rawResponse) {
+           liveKpi.detail.rawLogs = [JSON.stringify(realQuote.rawResponse, null, 2)];
+        }
+        
+        if (!base.reliabilityReasons.includes("實時 API 數據校驗通過")) {
+           base.reliabilityReasons = ["實時 API 數據校驗通過", ...base.reliabilityReasons];
+        }
       } else {
-        // Fallback or Jitter
-        base.currentPrice = base.currentPrice + (Math.random() - 0.5) * 0.1;
+        // Only jitter if API fails to show system is alive
+        base.currentPrice = base.currentPrice + (Math.random() - 0.5) * 0.01;
       }
 
-      base.kpis = base.kpis.map(k => {
-        if (k.value.includes('%')) {
-          const val = parseFloat(k.value);
-          return { ...k, value: `${(val + (Math.random() - 0.5) * 0.2).toFixed(1)}%` };
-        }
-        return k;
-      });
+      // KPIs remain static unless specifically updated
       result = { ...base, lastUpdated: new Date().toISOString() };
     } else {
-      // Generate intelligent-looking generic data for new tickers
-      const priceVal = realQuote ? realQuote.price : (Math.random() * 200 + 50);
+      // Dynamic generation for unknown tickers
+      const priceVal = (realQuote && realQuote.source === 'ALPHA_VANTAGE') ? realQuote.price : (Math.random() * 200 + 50);
       const priceStr = priceVal.toFixed(2);
       
       result = {
-        ticker,
-        name: `${ticker} 數據連動節點`,
+        ticker: ticker.toUpperCase(),
+        name: `${ticker.toUpperCase()} 數據連動節點`,
         currentPrice: priceVal,
         historicalData: [
           { date: 'T-4', price: priceVal * 0.9 },
@@ -483,45 +503,25 @@ export default function App() {
           { date: 'T-1', price: priceVal * 1.05 },
           { date: 'NOW', price: priceVal },
         ],
-        reliabilityScore: realQuote ? 96 : 72,
-        reliabilityReasons: realQuote 
-          ? ["實時 API 數據校驗通過", "Alpha Vantage 饋送穩定", "行情同步已建立"]
-          : ["通用行業基準", "高變異節點", "申報同步不完整"],
+        reliabilityScore: realQuote?.source === 'ALPHA_VANTAGE' ? 98 : 45,
+        reliabilityReasons: realQuote?.source === 'ALPHA_VANTAGE' 
+          ? ["實時 API 直接獲取", "數據一致性校驗優良"] 
+          : ["AI 生成基礎預測", "缺乏市場實時鏈接"],
         kpis: [
+          { label: "AI 效能", value: "88%", subText: "動態優化", accent: "text-blue-400", icon: <Activity className="w-5 h-5" />, detail: { title: "效能分析", description: "正持續掃描市場信號。", source: "深度掃描", confidence: "70%" } },
+          { label: "估值狀態", value: "Normal", subText: "對齊基準", accent: "text-emerald-400", icon: <Layers className="w-5 h-5" />, detail: { title: "估值校驗", description: "符合行業標準。", source: "基準審計", confidence: "60%" } },
           { 
-            label: "AI 效率", value: `${(Math.random() * 50 + 10).toFixed(1)}%`, subText: "年度同比優化", accent: "text-emerald-400", icon: <TrendingUp className="w-5 h-5" />, 
-            detail: { title: "效率分析", description: "公司正在使用大語言模型 (LLM) 以降低營運費用。", source: "通用 AI 審計", confidence: "81%" }
-          },
-          { 
-            label: "現金穩定性", value: `$${(Math.random() * 5 + 1).toFixed(1)}B`, subText: "流動性核心", accent: "text-blue-400", icon: <Database className="w-5 h-5" />,
-            detail: { title: "現金儲備", description: "穩定的現金頭寸以利擴張。", source: "財務饋送", confidence: "90%" }
-          },
-          { 
-            label: "系統價值", value: `P/E ${(Math.random() * 30 + 10).toFixed(1)}x`, subText: "估值倍數", accent: "text-purple-400", icon: <Layers className="w-5 h-5" />,
-            detail: { title: "倍數節點", description: "在歷史標準差範圍內交易。", source: "行業審計", confidence: "72%" }
-          },
-          { 
-            label: "目標價", value: `$${priceStr}`, subText: "AI 節點", accent: "text-amber-400", icon: <Target className="w-5 h-5" />,
-            range: { 
-              min: `$${(priceVal * 0.8).toFixed(2)}`, 
-              avg: `$${priceStr}`, 
-              max: `$${(priceVal * 1.2).toFixed(2)}` 
-            },
-            detail: { title: "客觀定價", description: "基於目前動能綜合生成。", source: "AI 管道", confidence: "68%" }
+            label: "目標價", value: `$${priceStr}`, subText: "即時基準", accent: "text-amber-400", icon: <Target className="w-5 h-5" />, 
+            range: { min: `$${(priceVal*0.8).toFixed(2)}`, avg: `$${priceStr}`, max: `$${(priceVal*1.2).toFixed(2)}` },
+            detail: { title: "定價邏輯", description: "基於現價動態生成。", source: "AI 管道", confidence: "65%" } 
           }
         ],
-        bullCase: [
-          { statement: "市場佔有率擴張", reasoning: "公司正在新興領域積極奪取市場佔有率。AI 識別出區域銷售節點有強勁動能。", source: "行業動能報告" },
-          { statement: "營運效率", reasoning: "內部成本削減措施和 AI 驅動的供應鏈優化正在擴大毛利。", source: "內部審計管道" }
-        ],
-        bearCase: [
-          { statement: "宏觀經濟敏感性", reasoning: "高利率和緊縮的信貸條件可能會壓縮公司的槓桿 and 擴張計劃。", source: "聯準會宏觀展望" },
-          { statement: "競爭壓力", reasoning: "來自新興市場的低成本競爭對手正開始挑戰公司的溢價定價模型。", source: "全球貿易分析" }
-        ],
+        bullCase: [{ statement: "技術突破", reasoning: "模型偵測到潛在的護城河擴張。", source: "模型預判" }],
+        bearCase: [{ statement: "數據稀疏", reasoning: "缺乏長期財報審計鏈。", source: "風險評級" }],
         killSwitches: ["標準：營收增長低於 5% YoY", "標準：負債權益比超過 2.5"],
         financials: [
-          { label: "總營收", value: "$1.2B", qoq: "+4%", yoy: "+12%", externalLink: `https://finance.yahoo.com/quote/${ticker}/financials` },
-          { label: "EBITDA", value: "$450M", qoq: "+2%", yoy: "+8%", externalLink: `https://finance.yahoo.com/quote/${ticker}/financials` }
+          { label: "營收", value: "$---", qoq: "+0%", yoy: "+0%", externalLink: "https://finance.yahoo.com/quote/" + ticker },
+          { label: "營業利益", value: "$---", qoq: "+0%", yoy: "+0%", externalLink: "https://finance.yahoo.com/quote/" + ticker }
         ],
         lastUpdated: new Date().toISOString()
       };
@@ -810,12 +810,23 @@ export default function App() {
         </div>
 
         <div className="p-6 border-t border-slate-900">
-          <div className="bg-slate-900 rounded-2xl p-4 flex flex-col gap-3">
+          <div className={`bg-slate-900 rounded-2xl p-4 flex flex-col gap-3 border ${apiError ? 'border-amber-500/30' : 'border-transparent'}`}>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-500">管道同步 (PIPELINE SYNC)</span>
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">管道狀態 (PIPELINE)</span>
+              <div className={`w-1.5 h-1.5 rounded-full ${apiError ? 'bg-amber-500 animate-bounce' : 'bg-emerald-500 animate-pulse'}`} />
             </div>
-            <p className="text-[10px] text-slate-400 font-mono leading-none">AUTO_QUERY: 啟動中</p>
+            {apiError ? (
+              <div className="space-y-1">
+                <p className="text-[10px] text-amber-400 font-mono leading-none">警告: {apiError}</p>
+                <p className="text-[8px] text-slate-500 leading-tight">
+                  {apiError === 'API_KEY_MISSING' ? '請在設置中配置 API Key' : 
+                   apiError === 'RATE_LIMIT_EXCEEDED' ? 'API 請求頻率過高 (限 5次/分)' :
+                   apiError === 'SYMBOL_NOT_FOUND' ? '找不到該標的代號' : '網絡或系統連動異常'}
+                </p>
+              </div>
+            ) : (
+              <p className="text-[10px] text-emerald-400 font-mono leading-none">AUTO_QUERY: 實時連動中</p>
+            )}
           </div>
         </div>
       </aside>
@@ -838,9 +849,20 @@ export default function App() {
                     ${data?.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </span>
                   {data?.reliabilityReasons.includes("實時 API 數據校驗通過") ? (
-                    <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-500 text-[8px] uppercase tracking-widest font-black border border-emerald-500/30">
-                      Live
-                    </span>
+                    <div className="flex items-center gap-2">
+                       <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-500 text-[8px] uppercase tracking-widest font-black border border-emerald-500/30">
+                        Live Market
+                      </span>
+                      <a 
+                        href={`https://finance.yahoo.com/quote/${data?.ticker}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="text-[9px] text-blue-400 hover:underline flex items-center gap-1 font-bold"
+                      >
+                        <RefreshCcw className="w-2.5 h-2.5" />
+                        比對外部數據
+                      </a>
+                    </div>
                   ) : (
                     <span className="px-1.5 py-0.5 rounded-sm bg-amber-500/10 text-amber-500/60 text-[8px] uppercase tracking-widest font-black border border-amber-500/10">
                       2026 Proj

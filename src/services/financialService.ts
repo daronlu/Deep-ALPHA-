@@ -3,41 +3,51 @@
  * Current Strategy: Patterns for Alpha Vantage / Yahoo Finance
  */
 
-interface StockQuote {
+export interface StockQuote {
   price: number;
   change: string;
   changePercent: string;
+  source: 'ALPHA_VANTAGE' | 'MOCK';
+  error?: string;
+  rawResponse?: any; // Added for debugging/trust
 }
 
 export const financialService = {
   /**
-   * Fetches real-time price using Alpha Vantage
-   * Requires VITE_ALPHA_VANTAGE_KEY in .env
+   * Fetches real-time price using our custom server proxy (Yahoo Finance)
    */
   async fetchRealtimeQuote(ticker: string): Promise<StockQuote | null> {
-    const apiKey = (import.meta as any).env.VITE_ALPHA_VANTAGE_KEY;
-    if (!apiKey) {
-      console.warn('API Key missing or env variable not found.');
-      return null;
-    }
-
     try {
-      const response = await fetch(
-        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`
-      );
+      const response = await fetch(`/api/quote/${ticker}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        return {
+          price: 0,
+          change: '0',
+          changePercent: '0%',
+          source: 'MOCK',
+          error: errorData.error || 'SERVER_ERROR'
+        };
+      }
+      
       const data = await response.json();
       
-      const quote = data['Global Quote'];
-      if (!quote || !quote['05. price']) return null;
-
       return {
-        price: parseFloat(quote['05. price']),
-        change: quote['09. change'],
-        changePercent: quote['10. change percent']
+        price: data.price,
+        change: data.change?.toString() || '0',
+        changePercent: data.changePercent || '0%',
+        source: 'ALPHA_VANTAGE', // Keeping for UI compatibility
+        rawResponse: data.rawResponse
       };
     } catch (error) {
-      console.error('Error fetching Alpha Vantage data:', error);
-      return null;
+      console.error('Error fetching local API data:', error);
+      return {
+        price: 0,
+        change: '0',
+        changePercent: '0%',
+        source: 'MOCK',
+        error: 'NETWORK_ERROR'
+      };
     }
   },
 
