@@ -18,6 +18,11 @@ async function startServer() {
   // Enable CORS for frontend flexibility
   app.use(cors());
   
+  // API Route: Health Check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   // API Route: Real-time Quote Proxy
   // Using Yahoo Finance for superior accuracy and split adjustment
   app.get("/api/quote/:ticker", async (req, res) => {

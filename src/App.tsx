@@ -260,13 +260,13 @@ const MOCK_DB: Record<string, InvestmentData> = {
   GOOG: {
     ticker: 'GOOG',
     name: 'Alphabet Inc.',
-    currentPrice: 192.40,
+    currentPrice: 174.55,
     historicalData: [
       { date: '2024-Q3', price: 158.00 },
-      { date: '2024-Q4', price: 165.00 },
-      { date: '2025-Q1', price: 178.00 },
-      { date: '2025-Q2', price: 184.00 },
-      { date: 'Current', price: 192.40 },
+      { date: '2024-Q4', price: 162.00 },
+      { date: '2025-Q1', price: 168.00 },
+      { date: '2025-Q2', price: 171.00 },
+      { date: 'Current', price: 174.55 },
     ],
     reliabilityScore: 91,
     reliabilityReasons: ["廣告技術支出校準", "GCP 積壓訂單分析", "搜索壟斷延遲審計"],
@@ -445,6 +445,9 @@ export default function App() {
   const [editForm, setEditForm] = useState({ cost: '', size: '' });
 
   // Load / Refresh Data Logic
+  // Constants
+  const BUILD_TIME = "2026-04-20 17:01"; // Updated per edit
+
   const syncData = async (ticker: string) => {
     setIsLoading(true);
     setApiError(null);
@@ -544,6 +547,17 @@ export default function App() {
   useEffect(() => {
     syncData(activeTicker);
   }, [activeTicker]);
+
+  // Cloud Bridge Health Check for GitHub Pages
+  useEffect(() => {
+    if (window.location.hostname.includes('github.io')) {
+       const apiBase = 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app';
+       fetch(`${apiBase}/api/health`)
+         .then(r => r.json())
+         .then(d => console.log('âœ… Cloud Bridge Status:', d))
+         .catch(e => console.error('âŒ Cloud Bridge Connection Failed:', e));
+    }
+  }, []);
 
   const removeTicker = (t: string) => {
     const updated = portfolio.filter(x => x !== t);
@@ -829,13 +843,29 @@ export default function App() {
               <div className="space-y-1">
                 <p className="text-[10px] text-amber-400 font-mono leading-none">警告: {apiError}</p>
                 <p className="text-[8px] text-slate-500 leading-tight">
-                  {apiError === 'API_KEY_MISSING' ? '請在設置中配置 API Key' : 
-                   apiError === 'RATE_LIMIT_EXCEEDED' ? 'API 請求頻率過高 (限 5次/分)' :
-                   apiError === 'SYMBOL_NOT_FOUND' ? '找不到該標的代號' : '網絡或系統連動異常'}
+                    {apiError === 'SYMBOL_NOT_FOUND' ? '找不到該標的代號' : 
+                    apiError === 'CONNECTION_FAILED' ? '無法連通私有數據中心 (可能受 CORS 限制)。靜態模式下建議手動比對。' : '網絡或系統連動異常'}
                 </p>
+                <div className="flex gap-2 mt-2">
+                  <button 
+                    onClick={() => syncData(activeTicker)}
+                    className="text-[8px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-500/30 transition-colors"
+                  >
+                    重新連動
+                  </button>
+                  <button 
+                    onClick={() => window.open('https://finance.yahoo.com/quote/' + activeTicker, '_blank')}
+                    className="text-[8px] bg-slate-800 text-slate-400 px-2 py-1 rounded hover:bg-slate-700 transition-colors"
+                  >
+                    外部比對
+                  </button>
+                </div>
               </div>
             ) : (
-              <p className="text-[10px] text-emerald-400 font-mono leading-none">AUTO_QUERY: 實時連動中</p>
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] text-emerald-400 font-mono leading-none">AUTO_QUERY: 實時連動中</p>
+                <p className="text-[7px] text-slate-600 font-mono">BUILD_REF: {BUILD_TIME}</p>
+              </div>
             )}
           </div>
         </div>
