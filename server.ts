@@ -38,8 +38,12 @@ async function startServer() {
   const PORT = 3000;
 
   // Enable CORS for frontend flexibility
+  // Note: origin: true mirrors the request origin, which is required when credentials: true
   app.use(cors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Allow all origins to facilitate testing and static exports
+      callback(null, true);
+    },
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
     credentials: true

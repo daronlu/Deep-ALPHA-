@@ -19,10 +19,12 @@ export const financialService = {
    */
   async fetchRealtimeQuote(ticker: string): Promise<StockQuote | null> {
     try {
-      const isStaticHost = window.location.hostname.includes('github.io') || window.location.hostname.includes('vercel.app');
+      const hostname = window.location.hostname;
+      // In development or preview on AIS, use relative paths. 
+      // For GitHub Pages or custom domains, use the explicit bridge URL.
+      const isInternal = hostname.includes('run.app') || hostname === 'localhost' || hostname === '127.0.0.1';
       
-      // CRITICAL: Point to the persistent Cloud Bridge for static exports
-      const apiBase = isStaticHost 
+      const apiBase = !isInternal 
         ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
         : '';
         
@@ -64,14 +66,23 @@ export const financialService = {
         source: data.source || 'YAHOO_FINANCE',
         rawResponse: data.rawResponse
       };
-    } catch (error) {
-      console.error('Error fetching data source:', error);
+    } catch (error: any) {
+      console.error('[Deep ALPHA] Network Error Exception:', error);
+      
+      // Attempt to diagnose the specific fetch error
+      let errorType = 'CONNECTION_FAILED';
+      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+        errorType = 'CORS_OR_NETWORK_ERROR';
+      } else if (error.name === 'AbortError') {
+        errorType = 'TIMEOUT';
+      }
+
       return {
         price: 0,
         change: '0',
         changePercent: '0%',
         source: 'MOCK',
-        error: 'CONNECTION_FAILED'
+        error: `${errorType}: ${error.message || 'Unknown'}`
       };
     }
   },
