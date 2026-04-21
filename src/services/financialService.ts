@@ -16,18 +16,19 @@ export interface StockQuote {
 export const financialService = {
   /**
    * Fetches real-time price using our custom server proxy (Yahoo Finance)
-   * Enhanced for GitHub Pages compatibility: Detects environment and uses the cloud bridge if needed.
    */
   async fetchRealtimeQuote(ticker: string): Promise<StockQuote | null> {
     try {
-      // Logic for GitHub Pages & Static Hosting:
-      // If we are on static host, we must point to the persistent Cloud Run server.
-      const isStaticHost = window.location.hostname.includes('github.io');
+      const isStaticHost = window.location.hostname.includes('github.io') || window.location.hostname.includes('vercel.app');
+      
+      // CRITICAL: Point to the persistent Cloud Bridge for static exports
       const apiBase = isStaticHost 
-        ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app' // Persistent Cloud Bridge
-        : ''; // Relative for local/dev
+        ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
+        : '';
         
-      const response = await fetch(`${apiBase}/api/quote/${ticker}`);
+      console.log(`[Deep ALPHA] Fetching ${ticker} from ${apiBase || 'local-server'}`);
+      
+      const response = await fetch(`${apiBase}/api/quote/${ticker}?t=${Date.now()}`); // Added cache-buster
       const contentType = response.headers.get('content-type');
       
       if (!response.ok || !contentType || !contentType.includes('application/json')) {

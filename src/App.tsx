@@ -446,7 +446,7 @@ export default function App() {
 
   // Load / Refresh Data Logic
   // Constants
-  const BUILD_TIME = "2026-04-20 18:18"; // API Instantiation Fix
+  const BUILD_TIME = "2026-04-21 16:15"; // Bridge Sync Final
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -454,6 +454,7 @@ export default function App() {
     
     // 1. Try to fetch real-time quote first
     const realQuote = await financialService.fetchRealtimeQuote(ticker);
+    console.log(`[Deep ALPHA] Real Quote Result (${ticker}):`, realQuote);
     
     if (realQuote?.error) {
        setApiError(realQuote.error);
