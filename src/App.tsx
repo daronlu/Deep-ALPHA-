@@ -196,13 +196,13 @@ const MOCK_DB: Record<string, InvestmentData> = {
   NVDA: {
     ticker: 'NVDA',
     name: 'NVIDIA Corporation',
-    currentPrice: 147.16,
+    currentPrice: 126.50,
     historicalData: [
-      { date: '2024-Q3', price: 118.00 },
-      { date: '2024-Q4', price: 132.00 },
-      { date: '2025-Q1', price: 140.00 },
-      { date: '2025-Q2', price: 145.00 },
-      { date: 'Current', price: 147.16 },
+      { date: '2024-Q3', price: 115.00 },
+      { date: '2024-Q4', price: 121.00 },
+      { date: '2025-Q1', price: 124.00 },
+      { date: '2025-Q2', price: 125.50 },
+      { date: 'Current', price: 126.50 },
     ],
     reliabilityScore: 94,
     reliabilityReasons: ["伺服器端物流驗證", "超大規模業者資本支出對齊", "TSMC 節點利用率審計"],
@@ -446,7 +446,7 @@ export default function App() {
 
   // Load / Refresh Data Logic
   // Constants
-  const BUILD_TIME = "2026-04-20 17:16"; // Core Logic Sync
+  const BUILD_TIME = "2026-04-20 18:18"; // API Instantiation Fix
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);

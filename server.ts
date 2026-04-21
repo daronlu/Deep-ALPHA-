@@ -5,7 +5,8 @@ import { fileURLToPath } from "url";
 import YahooFinance from 'yahoo-finance2';
 import cors from 'cors';
 
-const yahooFinance = YahooFinance;
+// yahoo-finance2 v3 uses the default export as the instance
+const yahooFinance = new YahooFinance();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,7 +29,12 @@ async function startServer() {
     const { ticker } = req.params;
     try {
       const tickerUpper = (ticker || "").toString().toUpperCase();
-      console.log(`[API] Fetching quote for: ${tickerUpper}`);
+      console.log(`[API Request] Ticker: ${tickerUpper}`);
+      
+      if (!yahooFinance || typeof yahooFinance.quote !== 'function') {
+        throw new Error("Yahoo Finance library not properly initialized");
+      }
+
       const result = await yahooFinance.quote(tickerUpper) as any;
       
       if (!result) {
