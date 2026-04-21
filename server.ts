@@ -8,16 +8,18 @@ import cors from 'cors';
 // Robust initialization for yahoo-finance2 v3 across different module envs
 const getYahooInstance = () => {
   try {
-    // 1. Try if it's already an instance
-    if ((RawYahooFinance as any).quote && typeof (RawYahooFinance as any).quote === 'function') {
-      return RawYahooFinance;
+    // Definitive Fix: If it's a function, it MUST be instantiated in v3
+    if (typeof RawYahooFinance === 'function') {
+      console.log("[YahooFinance] Detected as function/class, creating new instance...");
+      return new (RawYahooFinance as any)();
     }
-    // 2. Try to instantiate if it's a class (default or named)
+    
+    // Fallback for cases where it's already an instance or has a default constructor
     const Constructor = (RawYahooFinance as any).default || RawYahooFinance;
     if (typeof Constructor === 'function') {
       return new Constructor();
     }
-    // 3. Last fallback
+    
     return RawYahooFinance;
   } catch (e) {
     console.error("[YahooFinance] Init failed:", e);

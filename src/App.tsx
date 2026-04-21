@@ -446,7 +446,7 @@ export default function App() {
 
   // Load / Refresh Data Logic
   // Constants
-  const BUILD_TIME = "2026-04-21 17:15"; // Robust Bridge V4
+  const BUILD_TIME = "2026-04-21 17:18"; // Verified V5 Engine Fix
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
