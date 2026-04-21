@@ -443,17 +443,24 @@ export default function App() {
   });
   const [isEditingCost, setIsEditingCost] = useState(false);
   const [editForm, setEditForm] = useState({ cost: '', size: '' });
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  
+  const addLog = (msg: string) => {
+    console.log(`[DEEP ALPHA DEBUG] ${msg}`);
+    setDebugLogs(prev => [msg, ...prev].slice(0, 10));
+  };
 
-  // Load / Refresh Data Logic
   // Constants
-  const BUILD_TIME = "2026-04-21 17:18"; // Verified V5 Engine Fix
+  const BUILD_TIME = "2026-04-21 17:25"; // Alpha Diagnostic v6
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
     setApiError(null);
     
     // 1. Try to fetch real-time quote first
+    addLog(`Initiating fetch for ${ticker}...`);
     const realQuote = await financialService.fetchRealtimeQuote(ticker);
+    addLog(realQuote?.error ? `Error: ${realQuote.error}` : `Success: ${ticker} @ ${realQuote?.price}`);
     console.log(`[Deep ALPHA] Real Quote Result (${ticker}):`, realQuote);
     
     if (realQuote?.error) {
@@ -771,6 +778,22 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Debug Logs Overlay */}
+      <div className="fixed bottom-4 left-4 z-[100] max-w-xs bg-black/90 border border-slate-800 p-3 rounded-lg shadow-2xl pointer-events-none opacity-50 hover:opacity-100 transition-opacity">
+        <p className="text-[8px] font-black text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-1">
+          <Activity className="w-2 h-2" /> System Logs (REF: {BUILD_TIME})
+        </p>
+        <div className="space-y-1">
+          {debugLogs.length > 0 ? debugLogs.map((log, i) => (
+            <p key={i} className="text-[9px] font-mono text-slate-400 truncate">
+              {`> ${log}`}
+            </p>
+          )) : (
+            <p className="text-[9px] font-mono text-slate-600">No active logs...</p>
+          )}
+        </div>
+      </div>
+
       <aside className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
         <div className="p-8">
           <div className="flex items-center gap-3 mb-10">

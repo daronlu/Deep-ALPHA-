@@ -38,9 +38,20 @@ async function startServer() {
   const PORT = 3000;
 
   // Enable CORS for frontend flexibility
-  app.use(cors());
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
+    credentials: true
+  }));
   
-  // API Route: Health Check
+  // Custom headers to prevent aggressive caching
+  app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+  });
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
@@ -66,14 +77,30 @@ async function startServer() {
         return res.status(404).json({ error: "Ticker not found" });
       }
 
+      // Robust price selection (Current Market -> Post Market -> Previous Close)
+      const price = result.regularMarketPrice ?? 
+                   result.postMarketPrice ?? 
+                   result.preMarketPrice ?? 
+                   result.regularMarketPreviousClose;
+
+      const change = result.regularMarketChange ?? result.postMarketChange ?? 0;
+      const changePercent = result.regularMarketChangePercent ?? result.postMarketChangePercent ?? 0;
+
       res.json({
-        price: result.regularMarketPrice,
-        change: result.regularMarketChange,
-        changePercent: `${result.regularMarketChangePercent?.toFixed(2)}%`,
+        price: price,
+        change: change,
+        changePercent: `${changePercent.toFixed(2)}%`,
         previousClose: result.regularMarketPreviousClose,
-        name: result.longName || result.shortName,
+        name: result.longName || result.shortName || tickerUpper,
         source: 'YAHOO_FINANCE',
-        rawResponse: result
+        version: '1.6.0-DIAGNOSTIC',
+        timestamp: new Date().toISOString(),
+        marketState: result.marketState,
+        rawResponse: {
+           price: result.regularMarketPrice,
+           post: result.postMarketPrice,
+           state: result.marketState
+        }
       });
     } catch (error: any) {
       console.error(`[API Error] Failed to fetch ${ticker}:`, error.message);

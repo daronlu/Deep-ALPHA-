@@ -26,9 +26,10 @@ export const financialService = {
         ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
         : '';
         
-      console.log(`[Deep ALPHA] Fetching ${ticker} from ${apiBase || 'local-server'}`);
+      const fetchUrl = `${apiBase}/api/quote/${ticker}?t=${Date.now()}`;
+      console.log(`[Deep ALPHA LOG] Fetching ${ticker} from ${fetchUrl}`);
       
-      const response = await fetch(`${apiBase}/api/quote/${ticker}?t=${Date.now()}`);
+      const response = await fetch(fetchUrl);
       
       if (!response.ok) {
         const errorText = await response.text();
