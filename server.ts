@@ -2,24 +2,16 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import RawYahooFinance from 'yahoo-finance2';
+import YahooFinance from 'yahoo-finance2';
 import cors from 'cors';
 
-// Defensive initialization for yahoo-finance2 v3
-let yahooFinance: any;
-try {
-  // Try to use the default export as instance first (common for v3)
-  if ((RawYahooFinance as any).quote) {
-    yahooFinance = RawYahooFinance;
-    console.log("[YahooFinance] Using default export instance");
-  } else {
-    // Fallback to instantiation if default is a class
-    yahooFinance = new (RawYahooFinance as any)();
-    console.log("[YahooFinance] Created new instance from export");
-  }
-} catch (e: any) {
-  console.error("[YahooFinance] Initialization error:", e.message);
-}
+// Robust initialization for yahoo-finance2 v3
+// In v3, the default export can be the class or the instance depending on the env
+const yahooFinance = typeof (YahooFinance as any) === 'function' 
+  ? new (YahooFinance as any)() 
+  : YahooFinance;
+
+console.log("[YahooFinance] Library Initialized. Type:", typeof yahooFinance);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

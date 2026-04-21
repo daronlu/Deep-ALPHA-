@@ -446,7 +446,7 @@ export default function App() {
 
   // Load / Refresh Data Logic
   // Constants
-  const BUILD_TIME = "2026-04-21 16:50"; // Robust API Initialization
+  const BUILD_TIME = "2026-04-21 17:08"; // Yahoo v3 Final Fix
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
