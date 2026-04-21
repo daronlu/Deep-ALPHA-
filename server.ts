@@ -37,17 +37,21 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Enable CORS for frontend flexibility
-  // Note: origin: true mirrors the request origin, which is required when credentials: true
-  app.use(cors({
-    origin: (origin, callback) => {
-      // Allow all origins to facilitate testing and static exports
-      callback(null, true);
-    },
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
-    credentials: true
-  }));
+  // --- ULTRA COMPATIBLE CORS MIDDLEWARE ---
+  app.use((req, res, next) => {
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    // Handle Preflight
+    if (req.method === 'OPTIONS') {
+      console.log(`[CORS PREFLIGHT] Target: ${req.url} | Origin: ${origin}`);
+      return res.sendStatus(200);
+    }
+    next();
+  });
   
   // Custom headers to prevent aggressive caching
   app.use((req, res, next) => {
@@ -56,11 +60,15 @@ async function startServer() {
     res.setHeader('Expires', '0');
     next();
   });
+
+  // API Route: Health Check
   app.get("/api/health", (req, res) => {
+    console.log(`[HEALTH CHECK] Request from ${req.headers.origin || 'unknown'}`);
     res.json({ 
       status: "ok", 
       timestamp: new Date().toISOString(),
-      libInitialized: !!yahooFinance
+      libInitialized: !!yahooFinance,
+      build: "1.6.5-CORS-PRO"
     });
   });
 

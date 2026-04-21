@@ -29,9 +29,15 @@ export const financialService = {
         : '';
         
       const fetchUrl = `${apiBase}/api/quote/${ticker}?t=${Date.now()}`;
-      console.log(`[Deep ALPHA LOG] Fetching ${ticker} from ${fetchUrl}`);
+      console.log(`[Deep ALPHA DEBUG] Host: ${hostname} | Fetching: ${fetchUrl}`);
       
-      const response = await fetch(fetchUrl);
+      const response = await fetch(fetchUrl, {
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        }
+      });
       
       if (!response.ok) {
         const errorText = await response.text();
