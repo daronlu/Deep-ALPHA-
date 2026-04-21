@@ -2,11 +2,24 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import YahooFinance from 'yahoo-finance2';
+import RawYahooFinance from 'yahoo-finance2';
 import cors from 'cors';
 
-// yahoo-finance2 v3 uses the default export as the instance
-const yahooFinance = new YahooFinance();
+// Defensive initialization for yahoo-finance2 v3
+let yahooFinance: any;
+try {
+  // Try to use the default export as instance first (common for v3)
+  if ((RawYahooFinance as any).quote) {
+    yahooFinance = RawYahooFinance;
+    console.log("[YahooFinance] Using default export instance");
+  } else {
+    // Fallback to instantiation if default is a class
+    yahooFinance = new (RawYahooFinance as any)();
+    console.log("[YahooFinance] Created new instance from export");
+  }
+} catch (e: any) {
+  console.error("[YahooFinance] Initialization error:", e.message);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

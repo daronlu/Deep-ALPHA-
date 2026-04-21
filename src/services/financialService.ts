@@ -28,16 +28,28 @@ export const financialService = {
         
       console.log(`[Deep ALPHA] Fetching ${ticker} from ${apiBase || 'local-server'}`);
       
-      const response = await fetch(`${apiBase}/api/quote/${ticker}?t=${Date.now()}`); // Added cache-buster
-      const contentType = response.headers.get('content-type');
+      const response = await fetch(`${apiBase}/api/quote/${ticker}?t=${Date.now()}`);
       
-      if (!response.ok || !contentType || !contentType.includes('application/json')) {
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[Deep ALPHA] API Error (${response.status}):`, errorText);
         return {
           price: 0,
           change: '0',
           changePercent: '0%',
           source: 'MOCK',
-          error: 'API_UNAVAILABLE'
+          error: `API_ERROR_${response.status}`
+        };
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        return {
+          price: 0,
+          change: '0',
+          changePercent: '0%',
+          source: 'MOCK',
+          error: 'INVALID_RESPONSE_TYPE'
         };
       }
       

@@ -446,7 +446,7 @@ export default function App() {
 
   // Load / Refresh Data Logic
   // Constants
-  const BUILD_TIME = "2026-04-21 16:15"; // Bridge Sync Final
+  const BUILD_TIME = "2026-04-21 16:50"; // Robust API Initialization
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -457,7 +457,7 @@ export default function App() {
     console.log(`[Deep ALPHA] Real Quote Result (${ticker}):`, realQuote);
     
     if (realQuote?.error) {
-       setApiError(realQuote.error);
+       setApiError(`${realQuote.error} - 請檢查雲端伺服器是否運行`);
        if (window.location.hostname.includes('github.io')) {
          console.warn(`[Deep ALPHA] Bridge Error: ${realQuote.error}. This usually means the Cloud Run server is still booting or protected.`);
        }
