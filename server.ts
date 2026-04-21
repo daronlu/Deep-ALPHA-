@@ -2,16 +2,31 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import YahooFinance from 'yahoo-finance2';
+import RawYahooFinance from 'yahoo-finance2';
 import cors from 'cors';
 
-// Robust initialization for yahoo-finance2 v3
-// In v3, the default export can be the class or the instance depending on the env
-const yahooFinance = typeof (YahooFinance as any) === 'function' 
-  ? new (YahooFinance as any)() 
-  : YahooFinance;
+// Robust initialization for yahoo-finance2 v3 across different module envs
+const getYahooInstance = () => {
+  try {
+    // 1. Try if it's already an instance
+    if ((RawYahooFinance as any).quote && typeof (RawYahooFinance as any).quote === 'function') {
+      return RawYahooFinance;
+    }
+    // 2. Try to instantiate if it's a class (default or named)
+    const Constructor = (RawYahooFinance as any).default || RawYahooFinance;
+    if (typeof Constructor === 'function') {
+      return new Constructor();
+    }
+    // 3. Last fallback
+    return RawYahooFinance;
+  } catch (e) {
+    console.error("[YahooFinance] Init failed:", e);
+    return RawYahooFinance;
+  }
+};
 
-console.log("[YahooFinance] Library Initialized. Type:", typeof yahooFinance);
+const yahooFinance = getYahooInstance();
+console.log("[YahooFinance] Final Init Type:", typeof yahooFinance, "Has Quote:", !!(yahooFinance as any).quote);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,15 +48,14 @@ async function startServer() {
   });
 
   // API Route: Real-time Quote Proxy
-  // Using Yahoo Finance for superior accuracy and split adjustment
   app.get("/api/quote/:ticker", async (req, res) => {
     const { ticker } = req.params;
     try {
       const tickerUpper = (ticker || "").toString().toUpperCase();
-      console.log(`[API Request] Ticker: ${tickerUpper}`);
+      console.log(`[API Request] Ticker: ${tickerUpper} | Init: ${typeof yahooFinance} (HasQuote: ${!!yahooFinance?.quote})`);
       
       if (!yahooFinance || typeof yahooFinance.quote !== 'function') {
-        throw new Error("Yahoo Finance library not properly initialized");
+        throw new Error(`Yahoo Finance library initialization failure. State: ${typeof yahooFinance}`);
       }
 
       const result = await yahooFinance.quote(tickerUpper) as any;
