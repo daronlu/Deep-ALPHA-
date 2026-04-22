@@ -450,8 +450,10 @@ export default function App() {
     setDebugLogs(prev => [msg, ...prev].slice(0, 10));
   };
 
+  const [showDebug, setShowDebug] = useState(true);
+
   // Constants
-  const BUILD_TIME = "2026-04-22 15:30"; // Top-Menu Guide V13
+  const BUILD_TIME = "2026-04-22 15:45"; // Right-Panel & Fail-Safe V14
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -798,21 +800,37 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Debug Logs Overlay */}
-      <div className="fixed bottom-4 left-4 z-[100] max-w-xs bg-black/90 border border-slate-800 p-3 rounded-lg shadow-2xl pointer-events-none opacity-50 hover:opacity-100 transition-opacity">
-        <p className="text-[8px] font-black text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-1">
-          <Activity className="w-2 h-2" /> System Logs (REF: {BUILD_TIME})
-        </p>
-        <div className="space-y-1">
-          {debugLogs.length > 0 ? debugLogs.map((log, i) => (
-            <p key={i} className="text-[9px] font-mono text-slate-400 truncate">
-              {`> ${log}`}
+      {/* Debug Logs Overlay (Moved to Right to avoid blocking sidebar) */}
+      {showDebug && (
+        <div className="fixed bottom-4 right-4 z-[100] w-64 bg-black/90 border border-slate-800 p-3 rounded-lg shadow-2xl transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
+              <Activity className="w-2 h-2" /> System Logs (REF: {BUILD_TIME})
             </p>
-          )) : (
-            <p className="text-[9px] font-mono text-slate-600">No active logs...</p>
-          )}
+            <button onClick={() => setShowDebug(false)} className="text-slate-600 hover:text-white">
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="space-y-1">
+            {debugLogs.length > 0 ? debugLogs.map((log, i) => (
+              <p key={i} className="text-[9px] font-mono text-slate-400 truncate">
+                {`> ${log}`}
+              </p>
+            )) : (
+              <p className="text-[9px] font-mono text-slate-600">No active logs...</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {!showDebug && (
+        <button 
+          onClick={() => setShowDebug(true)}
+          className="fixed bottom-4 right-4 z-[100] p-3 bg-slate-900 border border-slate-800 rounded-full text-slate-400 hover:text-white shadow-xl"
+        >
+          <Info className="w-4 h-4" />
+        </button>
+      )}
 
       <aside className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
         <div className="p-8">
@@ -885,41 +903,26 @@ export default function App() {
             </div>
             {apiError ? (
               <div className="space-y-4">
-                <div className="bg-rose-500/10 p-5 rounded-2xl border border-rose-500/30">
-                  <div className="flex items-center gap-3 mb-3">
-                    <ShieldAlert className="w-6 h-6 text-rose-500" />
-                    <p className="text-[12px] font-black text-rose-500 uppercase tracking-widest">連線遭 Google 阻斷</p>
-                  </div>
-                  <p className="text-[10px] text-slate-400 leading-relaxed font-bold">
-                     目前後端處於「私有模式」。GitHub 網頁無法穿透 Google 的身分驗證牆。
+                <div className="bg-rose-500/10 p-4 rounded-xl border border-rose-500/30">
+                  <p className="text-[10px] font-black text-rose-500 tracking-widest flex items-center gap-2 mb-1">
+                    <ShieldAlert className="w-3 h-3" /> 連線遭阻斷
                   </p>
+                  <p className="text-[9px] text-slate-500 leading-tight">目前後端為「私有模式」，請將其公開。</p>
                 </div>
 
-                <div className="bg-blue-600/10 p-5 rounded-2xl border border-blue-500/30 space-y-4">
-                  <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                    <Target className="w-4 h-4" /> 解鎖連線三步驟 (10秒完成)
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <div className="flex gap-3 items-start">
-                      <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold shrink-0">1</div>
-                      <p className="text-[10px] text-slate-300 font-bold">點擊上方選單列的 <span className="text-white bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 mx-1">Publish</span> 按鈕</p>
-                    </div>
-                    <div className="flex gap-3 items-start">
-                      <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold shrink-0">2</div>
-                      <p className="text-[10px] text-slate-300 font-bold">權限確認為 <span className="text-emerald-400">Public: Anyone with the link</span></p>
-                    </div>
-                    <div className="flex gap-3 items-start">
-                      <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold shrink-0">3</div>
-                      <p className="text-[10px] text-slate-300 font-bold">點擊 <span className="text-white underline">Publish to Shared App</span> 完成部署</p>
-                    </div>
-                  </div>
+                <div className="bg-blue-600/10 p-4 rounded-xl border border-blue-500/30">
+                  <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2">解鎖步驟：</p>
+                  <ul className="text-[9px] text-slate-400 space-y-1 font-bold">
+                    <li>1. 點擊頂部 <span className="text-white">Publish</span></li>
+                    <li>2. 確認為 <span className="text-emerald-400">Public Link</span></li>
+                    <li>3. 按下 <span className="text-white underline">Publish to Shared App</span></li>
+                  </ul>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
                   <button 
                     onClick={() => syncData(activeTicker)}
-                    className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-[11px] transition-all shadow-lg shadow-blue-500/20"
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-[10px] transition-all"
                   >
                     重新連動數據
                   </button>
@@ -931,14 +934,10 @@ export default function App() {
                         : '';
                        window.open(`${apiBase}/api/health/`, '_blank');
                     }}
-                    className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-2xl font-black text-[11px] transition-all border border-slate-700"
+                    className="w-full py-3 bg-slate-800 text-slate-400 rounded-xl font-bold text-[10px] text-center border border-slate-700 transition-all"
                   >
-                    測試雲端解鎖
+                    測試一秒聯網
                   </button>
-                </div>
-                
-                <div className="mt-2 text-center">
-                  <p className="text-[8px] text-slate-700 font-mono">DEBUG_CODE: {apiError}</p>
                 </div>
               </div>
             ) : (

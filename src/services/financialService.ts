@@ -20,69 +20,57 @@ export const financialService = {
   async fetchRealtimeQuote(ticker: string): Promise<StockQuote | null> {
     try {
       const hostname = window.location.hostname;
-      // In development or preview on AIS, use relative paths. 
-      // For GitHub Pages or custom domains, use the explicit bridge URL.
       const isInternal = hostname.includes('run.app') || hostname === 'localhost' || hostname === '127.0.0.1';
       
-      const apiBase = !isInternal 
-        ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
-        : '';
-        
-      // Use trailing slash to avoid 301/302 redirects from cloud proxies
-      const fetchUrl = `${apiBase}/api/quote/${ticker}/?t=${Date.now()}`;
-      console.log(`[Deep ALPHA DEBUG] Host: ${hostname} | Fetching: ${fetchUrl}`);
-      
-      const response = await fetch(fetchUrl, {
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
-      });
+      const bases = isInternal ? [''] : [
+        'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app',
+        'https://ais-dev-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
+      ];
 
-      if (response.redirected) {
-        throw new Error('AUTH_WALL_DETECTED: Server redirected to Google Login.');
+      let lastError = null;
+      for (const base of bases) {
+        try {
+          const fetchUrl = `${base}/api/quote/${ticker}/?t=${Date.now()}`;
+          console.log(`[Deep ALPHA] Trying API: ${fetchUrl}`);
+          
+          const response = await fetch(fetchUrl, {
+            mode: 'cors',
+            headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache' }
+          });
+
+          if (response.redirected) {
+             lastError = 'AUTH_WALL_DETECTED';
+             continue;
+          }
+
+          if (!response.ok) {
+            lastError = `API_${response.status}`;
+            continue;
+          }
+
+          const data = await response.json();
+          return {
+            price: data.price,
+            change: data.change?.toString() || '0',
+            changePercent: data.changePercent || '0%',
+            previousClose: data.previousClose || 0,
+            source: data.source || 'YAHOO_FINANCE',
+            rawResponse: data.rawResponse
+          };
+        } catch (e: any) {
+          lastError = e.message;
+        }
       }
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`[Deep ALPHA] API Error (${response.status}):`, errorText);
-        return {
-          price: 0,
-          change: '0',
-          changePercent: '0%',
-          source: 'MOCK',
-          error: `API_ERROR_${response.status}`
-        };
-      }
-      
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        return {
-          price: 0,
-          change: '0',
-          changePercent: '0%',
-          source: 'MOCK',
-          error: 'INVALID_RESPONSE_TYPE'
-        };
-      }
-      
-      const data = await response.json();
-      
-      return {
-        price: data.price,
-        change: data.change?.toString() || '0',
-        changePercent: data.changePercent || '0%',
-        previousClose: data.previousClose,
-        source: data.source || 'YAHOO_FINANCE',
-        rawResponse: data.rawResponse
-      };
+      throw new Error(lastError || 'CONNECTION_FAILED');
     } catch (error: any) {
       console.error('[Deep ALPHA] Network Error Exception:', error);
       
       // Attempt to diagnose the specific fetch error
       let errorType = 'CONNECTION_FAILED';
-      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      if (error.message.includes('AUTH_WALL_DETECTED')) {
+        errorType = 'AUTH_WALL_DETECTED';
+      } else if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
         errorType = 'CORS_OR_NETWORK_ERROR';
       } else if (error.name === 'AbortError') {
         errorType = 'TIMEOUT';
