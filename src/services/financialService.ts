@@ -31,18 +31,19 @@ export const financialService = {
       for (const base of bases) {
         try {
           const fetchUrl = `${base}/api/quote/${ticker}/?t=${Date.now()}`;
-          console.log(`[Deep ALPHA] Trying API: ${fetchUrl}`);
+          console.log(`[Deep ALPHA] Trying: ${fetchUrl}`);
           
           const response = await fetch(fetchUrl, {
             mode: 'cors',
-            headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache' }
+            credentials: 'omit', // Crucial: Don't send cookies to avoid triggering auth headers
+            headers: { 'Accept': 'application/json' }
           });
 
-          if (response.redirected) {
-             lastError = 'AUTH_WALL_DETECTED';
-             continue;
+          if (response.redirected || response.status === 302) {
+            lastError = 'AUTH_WALL_DETECTED';
+            continue;
           }
-
+          
           if (!response.ok) {
             lastError = `API_${response.status}`;
             continue;
@@ -50,10 +51,12 @@ export const financialService = {
 
           const data = await response.json();
           return {
-            price: data.price,
-            change: data.change?.toString() || '0',
+            ticker: ticker.toUpperCase(),
+            price: data.price || 0,
+            change: (data.change || 0).toString(),
             changePercent: data.changePercent || '0%',
             previousClose: data.previousClose || 0,
+            name: data.name || ticker,
             source: data.source || 'YAHOO_FINANCE',
             rawResponse: data.rawResponse
           };

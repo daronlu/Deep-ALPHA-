@@ -453,7 +453,7 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(true);
 
   // Constants
-  const BUILD_TIME = "2026-04-22 15:45"; // Right-Panel & Fail-Safe V14
+  const BUILD_TIME = "2026-04-22 16:45"; // Wake-up Protocol V15
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -919,24 +919,21 @@ export default function App() {
                   </ul>
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1.5">
                   <button 
                     onClick={() => syncData(activeTicker)}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-[10px] transition-all"
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-[10px] transition-all"
                   >
                     重新連動數據
                   </button>
                   <button 
                     onClick={() => {
-                       const hostname = window.location.hostname;
-                       const apiBase = !hostname.includes('run.app') && hostname !== 'localhost' 
-                        ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
-                        : '';
+                       const apiBase = 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app';
                        window.open(`${apiBase}/api/health/`, '_blank');
                     }}
-                    className="w-full py-3 bg-slate-800 text-slate-400 rounded-xl font-bold text-[10px] text-center border border-slate-700 transition-all"
+                    className="w-full py-2.5 bg-slate-800 text-slate-400 rounded-lg font-bold text-[10px] text-center border border-slate-700 transition-all"
                   >
-                    測試一秒聯網
+                    喚醒並測試連結
                   </button>
                 </div>
               </div>
