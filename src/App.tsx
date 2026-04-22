@@ -451,7 +451,7 @@ export default function App() {
   };
 
   // Constants
-  const BUILD_TIME = "2026-04-22 15:25"; // IAM Diagnostic V12
+  const BUILD_TIME = "2026-04-22 15:30"; // Top-Menu Guide V13
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -903,15 +903,15 @@ export default function App() {
                   <div className="space-y-3">
                     <div className="flex gap-3 items-start">
                       <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold shrink-0">1</div>
-                      <p className="text-[10px] text-slate-300 font-bold">點擊右上角 <span className="text-white bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 mx-1">Share</span> 按鈕</p>
+                      <p className="text-[10px] text-slate-300 font-bold">點擊上方選單列的 <span className="text-white bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 mx-1">Publish</span> 按鈕</p>
                     </div>
                     <div className="flex gap-3 items-start">
                       <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold shrink-0">2</div>
-                      <p className="text-[10px] text-slate-300 font-bold">權限設為 <span className="text-emerald-400">Anyone with the link</span></p>
+                      <p className="text-[10px] text-slate-300 font-bold">權限確認為 <span className="text-emerald-400">Public: Anyone with the link</span></p>
                     </div>
                     <div className="flex gap-3 items-start">
                       <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold shrink-0">3</div>
-                      <p className="text-[10px] text-slate-300 font-bold">點擊底部的藍色 <span className="text-white underline">Publish</span> 或 <span className="text-white underline">Update</span></p>
+                      <p className="text-[10px] text-slate-300 font-bold">點擊 <span className="text-white underline">Publish to Shared App</span> 完成部署</p>
                     </div>
                   </div>
                 </div>
