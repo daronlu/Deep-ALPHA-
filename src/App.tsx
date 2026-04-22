@@ -451,13 +451,33 @@ export default function App() {
   };
 
   // Constants
-  const BUILD_TIME = "2026-04-22 14:25"; // Auth Wall Detector V10
+  const BUILD_TIME = "2026-04-22 15:25"; // IAM Diagnostic V12
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
     setApiError(null);
     
-    // 1. Try to fetch real-time quote first
+    // 1. Check API Health First
+    addLog(`Checking API Health...`);
+    try {
+      const hostname = window.location.hostname;
+      const apiBase = !hostname.includes('run.app') && hostname !== 'localhost' 
+        ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
+        : '';
+        
+      const healthCheck = await fetch(`${apiBase}/api/health/`);
+      if (healthCheck.redirected) {
+        addLog(`🚨 REDIRECT DETECTED! Server is locked.`);
+        setApiError('AUTH_WALL_DETECTED');
+        setIsLoading(false);
+        return;
+      }
+      addLog(`âœ… API Connected (V12)`);
+    } catch (e: any) {
+      addLog(`â Œ API Offline: ${e.message}`);
+    }
+
+    // 2. Fetch real-time quote
     addLog(`Initiating fetch for ${ticker}...`);
     const realQuote = await financialService.fetchRealtimeQuote(ticker);
     addLog(realQuote?.error ? `Error: ${realQuote.error}` : `Success: ${ticker} @ ${realQuote?.price}`);

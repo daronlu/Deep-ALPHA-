@@ -68,7 +68,7 @@ async function startServer() {
       status: "ok", 
       timestamp: new Date().toISOString(),
       libInitialized: !!yahooFinance,
-      build: "1.6.9-POST-SLASH"
+      build: "1.7.0-IAM-LOG"
     });
   });
 
