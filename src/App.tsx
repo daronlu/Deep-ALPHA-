@@ -451,7 +451,7 @@ export default function App() {
   };
 
   // Constants
-  const BUILD_TIME = "2026-04-21 17:40"; // Handshake V8 (Pro CORS)
+  const BUILD_TIME = "2026-04-22 14:25"; // Auth Wall Detector V10
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -864,25 +864,43 @@ export default function App() {
               <div className={`w-1.5 h-1.5 rounded-full ${apiError ? 'bg-amber-500 animate-bounce' : 'bg-emerald-500 animate-pulse'}`} />
             </div>
             {apiError ? (
-              <div className="space-y-1">
-                <p className="text-[10px] text-amber-400 font-mono leading-none">警告: {apiError}</p>
-                <p className="text-[8px] text-slate-500 leading-tight">
-                    {apiError === 'SYMBOL_NOT_FOUND' ? '找不到該標的代號' : 
-                    apiError === 'CONNECTION_FAILED' ? '無法連通數據引擎。' : 
-                    apiError === 'API_UNAVAILABLE' ? '數據中心啟動中或受限，請點擊「外部比對」。' : '連動異常'}
-                </p>
-                <div className="flex gap-2 mt-2">
+              <div className="space-y-4">
+                <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
+                  <p className="text-[10px] text-amber-400 font-mono tracking-tighter">API BLOCKED (302/CORS)</p>
+                  <p className="text-[9px] text-slate-400 leading-relaxed font-bold mt-2">
+                     偵測到 302 重導向。這通常表示雲端伺服器被鎖定，請將其公開。
+                  </p>
+                </div>
+
+                <div className="bg-blue-600/10 p-4 rounded-xl border border-blue-500/30">
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <ShieldCheck className="w-3 h-3" /> 如何解除鎖定 (IAM FIX)
+                  </p>
+                  <ul className="text-[9px] text-slate-300 space-y-1.5 font-bold list-disc ml-3">
+                    <li>點擊 AI Studio 右上角 "Share"</li>
+                    <li>設置為 "Anyone with the link"</li>
+                    <li>點閱 "Publish" (公開發佈)</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-2">
                   <button 
                     onClick={() => syncData(activeTicker)}
-                    className="text-[8px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-500/30 transition-colors"
+                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-[10px] transition-all text-center"
                   >
                     重新連動
                   </button>
                   <button 
-                    onClick={() => window.open('https://finance.yahoo.com/quote/' + activeTicker, '_blank')}
-                    className="text-[8px] bg-slate-800 text-slate-400 px-2 py-1 rounded hover:bg-slate-700 transition-colors"
+                    onClick={() => {
+                       const hostname = window.location.hostname;
+                       const apiBase = !hostname.includes('run.app') && hostname !== 'localhost' 
+                        ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
+                        : '';
+                       window.open(`${apiBase}/api/health/`, '_blank');
+                    }}
+                    className="flex-1 py-3 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-xl font-bold text-[10px] text-center border border-emerald-500/20 transition-all"
                   >
-                    外部比對
+                    測試雲端解鎖
                   </button>
                 </div>
               </div>

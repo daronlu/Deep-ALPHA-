@@ -62,18 +62,18 @@ async function startServer() {
   });
 
   // API Route: Health Check
-  app.get("/api/health", (req, res) => {
+  app.get("/api/health/", (req, res) => {
     console.log(`[HEALTH CHECK] Request from ${req.headers.origin || 'unknown'}`);
     res.json({ 
       status: "ok", 
       timestamp: new Date().toISOString(),
       libInitialized: !!yahooFinance,
-      build: "1.6.5-CORS-PRO"
+      build: "1.6.9-POST-SLASH"
     });
   });
 
   // API Route: Real-time Quote Proxy
-  app.get("/api/quote/:ticker", async (req, res) => {
+  app.get("/api/quote/:ticker/", async (req, res) => {
     const { ticker } = req.params;
     try {
       const tickerUpper = (ticker || "").toString().toUpperCase();

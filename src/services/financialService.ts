@@ -28,7 +28,8 @@ export const financialService = {
         ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
         : '';
         
-      const fetchUrl = `${apiBase}/api/quote/${ticker}?t=${Date.now()}`;
+      // Use trailing slash to avoid 301/302 redirects from cloud proxies
+      const fetchUrl = `${apiBase}/api/quote/${ticker}/?t=${Date.now()}`;
       console.log(`[Deep ALPHA DEBUG] Host: ${hostname} | Fetching: ${fetchUrl}`);
       
       const response = await fetch(fetchUrl, {
@@ -38,6 +39,10 @@ export const financialService = {
           'Cache-Control': 'no-cache'
         }
       });
+
+      if (response.redirected) {
+        throw new Error('AUTH_WALL_DETECTED: Server redirected to Google Login.');
+      }
       
       if (!response.ok) {
         const errorText = await response.text();
