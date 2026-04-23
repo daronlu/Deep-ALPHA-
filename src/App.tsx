@@ -453,7 +453,7 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(true);
 
   // Constants
-  const BUILD_TIME = "2026-04-22 16:45"; // Wake-up Protocol V15
+  const BUILD_TIME = "2026-04-22 18:25"; // Build Lock Resolved V16
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);

@@ -68,7 +68,7 @@ async function startServer() {
       status: "ok", 
       timestamp: new Date().toISOString(),
       libInitialized: !!yahooFinance,
-      build: "1.7.0-IAM-LOG"
+      build: "1.7.5-V16-LOCK-FIX"
     });
   });
 
@@ -105,7 +105,7 @@ async function startServer() {
         previousClose: result.regularMarketPreviousClose,
         name: result.longName || result.shortName || tickerUpper,
         source: 'YAHOO_FINANCE',
-        version: '1.6.0-DIAGNOSTIC',
+        version: '1.7.5-V16-LOCK-FIX',
         timestamp: new Date().toISOString(),
         marketState: result.marketState,
         rawResponse: {

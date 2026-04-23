@@ -4,13 +4,15 @@
  */
 
 export interface StockQuote {
+  ticker?: string;
+  name?: string;
   price: number;
   change: string;
   changePercent: string;
   previousClose?: number;
   source: 'ALPHA_VANTAGE' | 'YAHOO_FINANCE' | 'MOCK';
   error?: string;
-  rawResponse?: any; // Added for debugging/trust
+  rawResponse?: any; 
 }
 
 export const financialService = {
