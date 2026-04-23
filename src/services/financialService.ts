@@ -33,13 +33,15 @@ export const financialService = {
       for (const base of bases) {
         try {
           const fetchUrl = `${base}/api/quote/${ticker}/?t=${Date.now()}`;
-          console.log(`[Deep ALPHA] Trying: ${fetchUrl}`);
+          console.log(`[Deep ALPHA] Fetching: ${fetchUrl}`);
           
           const response = await fetch(fetchUrl, {
             mode: 'cors',
-            // Fix: Use 'include' inside AI Studio to keep Google Auth session, 'omit' for external bypass
-            credentials: isInternal ? 'include' : 'omit', 
-            headers: { 'Accept': 'application/json' }
+            credentials: isInternal ? 'include' : 'omit',
+            // Simplified headers to avoid triggering complex IAP/CORS checks
+            headers: isInternal 
+              ? { 'Accept': 'application/json', 'Cache-Control': 'no-cache' }
+              : { 'Accept': 'application/json' }
           });
 
           if (response.redirected || response.status === 302) {

@@ -61,7 +61,7 @@ async function startServer() {
       status: "ok", 
       timestamp: new Date().toISOString(),
       libInitialized: !!yahooFinance,
-      build: "1.8.0-V18-FINAL"
+      build: "1.9.0-V20-TRANSPARENT"
     });
   });
 
@@ -98,7 +98,7 @@ async function startServer() {
         previousClose: result.regularMarketPreviousClose,
         name: result.longName || result.shortName || tickerUpper,
         source: 'YAHOO_FINANCE',
-        version: '1.8.0-V18-FINAL',
+        version: '1.9.0-V20-TRANSPARENT',
         timestamp: new Date().toISOString(),
         marketState: result.marketState,
         rawResponse: {

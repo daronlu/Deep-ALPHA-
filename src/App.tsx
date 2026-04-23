@@ -454,7 +454,7 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(true);
 
   // Constants
-  const BUILD_TIME = "2026-04-23 16:00"; // Mode-Truth V19
+  const BUILD_TIME = "2026-04-23 16:15"; // Transparent V20
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
