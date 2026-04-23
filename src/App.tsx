@@ -100,6 +100,7 @@ interface InvestmentData {
   narrative?: string;
   lastUpdated: string;
   details?: Record<string, DetailContent>;
+  source?: string;
 }
 
 interface PortfolioConfig {
@@ -453,7 +454,7 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(true);
 
   // Constants
-  const BUILD_TIME = "2026-04-23 15:55"; // Internal First V18
+  const BUILD_TIME = "2026-04-23 16:00"; // Mode-Truth V19
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -532,7 +533,7 @@ export default function App() {
       }
 
       // KPIs remain static unless specifically updated
-      result = { ...base, lastUpdated: new Date().toISOString() };
+      result = { ...base, lastUpdated: new Date().toISOString(), source: realQuote?.source || 'MOCK' };
     } else {
       // Dynamic generation for unknown tickers
       const hasRealData = realQuote && (realQuote.source === 'ALPHA_VANTAGE' || realQuote.source === 'YAHOO_FINANCE');
@@ -570,7 +571,8 @@ export default function App() {
           { label: "營收", value: "$---", qoq: "+0%", yoy: "+0%", externalLink: "https://finance.yahoo.com/quote/" + ticker },
           { label: "營業利益", value: "$---", qoq: "+0%", yoy: "+0%", externalLink: "https://finance.yahoo.com/quote/" + ticker }
         ],
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
+        source: realQuote?.source || 'MOCK'
       };
     }
     
@@ -901,10 +903,12 @@ export default function App() {
 
         <div className="p-6 border-t border-slate-900">
           <div className={`bg-slate-900 rounded-2xl p-4 flex flex-col gap-3 border ${apiError ? 'border-amber-500/30' : 'border-transparent'}`}>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">管道狀態 (PIPELINE)</span>
-              <div className={`w-1.5 h-1.5 rounded-full ${apiError ? 'bg-amber-500 animate-bounce' : 'bg-emerald-500 animate-pulse'}`} />
-            </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-1.5 h-1.5 rounded-full ${apiError ? 'bg-amber-500 animate-bounce' : (data?.source === 'YAHOO_FINANCE' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600')}`} />
+                  <span className={`text-[9px] font-bold tracking-widest uppercase ${apiError ? 'text-amber-500' : (data?.source === 'YAHOO_FINANCE' ? 'text-emerald-500' : 'text-slate-500')}`}>
+                    {apiError ? '連線遭阻斷' : (data?.source === 'YAHOO_FINANCE' ? '實時數據連動' : 'AI 預估模式')}
+                  </span>
+                </div>
             {apiError ? (
               <div className="space-y-4">
                 <div className="bg-rose-500/10 p-4 rounded-xl border border-rose-500/30">
@@ -959,7 +963,11 @@ export default function App() {
             <div className="flex flex-col">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-black text-white tracking-tighter uppercase">{data?.ticker}</h2>
-                <div className="status-badge bg-blue-500/10 text-blue-500 border-blue-500/20">已同步</div>
+                {data?.source === 'YAHOO_FINANCE' ? (
+                  <div className="status-badge bg-emerald-500/10 text-emerald-500 border-emerald-500/20">實時連動中</div>
+                ) : (
+                  <div className="status-badge bg-amber-500/10 text-amber-500 border-amber-500/20">AI 模擬模式</div>
+                )}
               </div>
               <div className="flex items-center gap-3 mt-1">
                 <p className="text-xs text-slate-500 font-medium">{data?.name}</p>
