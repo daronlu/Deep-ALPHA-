@@ -32,12 +32,15 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
         env:
           VITE_ALPHA_VANTAGE_KEY: ${{ secrets.VITE_ALPHA_VANTAGE_KEY }}
+
+      - name: Check Build Output
+        run: ls -R ./dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
