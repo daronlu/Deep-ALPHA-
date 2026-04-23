@@ -454,7 +454,7 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(true);
 
   // Constants
-  const BUILD_TIME = "2026-04-23 16:15"; // Transparent V20
+  const BUILD_TIME = "2026-04-23 16:50"; // Fresh Start V22
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
