@@ -37,7 +37,8 @@ export const financialService = {
           
           const response = await fetch(fetchUrl, {
             mode: 'cors',
-            credentials: 'omit', // Crucial: Don't send cookies to avoid triggering auth headers
+            // Fix: Use 'include' inside AI Studio to keep Google Auth session, 'omit' for external bypass
+            credentials: isInternal ? 'include' : 'omit', 
             headers: { 'Accept': 'application/json' }
           });
 

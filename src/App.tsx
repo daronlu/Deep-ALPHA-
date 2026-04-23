@@ -453,7 +453,7 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(true);
 
   // Constants
-  const BUILD_TIME = "2026-04-22 18:25"; // Build Lock Resolved V16
+  const BUILD_TIME = "2026-04-23 15:55"; // Internal First V18
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -467,8 +467,12 @@ export default function App() {
         ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
         : '';
         
-      const healthCheck = await fetch(`${apiBase}/api/health/`);
-      if (healthCheck.redirected) {
+      const healthCheck = await fetch(`${apiBase}/api/health/`, {
+        credentials: apiBase === '' ? 'include' : 'omit'
+      });
+      
+      // Internal redirect check is less strict because cookies are handled by browser
+      if (healthCheck.redirected && apiBase !== '') {
         addLog(`🚨 REDIRECT DETECTED! Server is locked.`);
         setApiError('AUTH_WALL_DETECTED');
         setIsLoading(false);

@@ -37,38 +37,31 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // --- ULTRA COMPATIBLE CORS MIDDLEWARE ---
+  // --- MAXIMUM COMPATIBILITY CORS & CACHE CONTROL ---
   app.use((req, res, next) => {
     const origin = req.headers.origin || '*';
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Cache-Control, Accept');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    
-    // Handle Preflight
-    if (req.method === 'OPTIONS') {
-      console.log(`[CORS PREFLIGHT] Target: ${req.url} | Origin: ${origin}`);
-      return res.sendStatus(200);
-    }
-    next();
-  });
-  
-  // Custom headers to prevent aggressive caching
-  app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
     next();
   });
 
   // API Route: Health Check
   app.get("/api/health/", (req, res) => {
-    console.log(`[HEALTH CHECK] Request from ${req.headers.origin || 'unknown'}`);
+    console.log(`[HEALTH CHECK] Origin: ${req.headers.origin} | Host: ${req.headers.host}`);
     res.json({ 
       status: "ok", 
       timestamp: new Date().toISOString(),
       libInitialized: !!yahooFinance,
-      build: "1.7.5-V16-LOCK-FIX"
+      build: "1.8.0-V17-RESET"
     });
   });
 
@@ -105,7 +98,7 @@ async function startServer() {
         previousClose: result.regularMarketPreviousClose,
         name: result.longName || result.shortName || tickerUpper,
         source: 'YAHOO_FINANCE',
-        version: '1.7.5-V16-LOCK-FIX',
+        version: '1.8.0-V17-RESET',
         timestamp: new Date().toISOString(),
         marketState: result.marketState,
         rawResponse: {
