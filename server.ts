@@ -37,20 +37,19 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // --- MAXIMUM COMPATIBILITY CORS & CACHE CONTROL ---
+  // --- ULTIMATE DYNAMIC CORS ---
   app.use((req, res, next) => {
+    // Dynamically echo the origin to satisfy browsers' strict CORS rules
     const origin = req.headers.origin || '*';
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Cache-Control, Accept');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Accept, Content-Type, Authorization, X-Requested-With');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
     
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
+    // Total Cache Clean
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
+    
+    if (req.method === 'OPTIONS') return res.status(200).end();
     next();
   });
 
