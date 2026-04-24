@@ -32,12 +32,12 @@ export const financialService = {
       let lastError = null;
       for (const base of bases) {
         try {
-          const fetchUrl = `${base}/api/quote/${ticker}?t=${Date.now()}`;
+          const fetchUrl = `${base}/api/quote/${ticker}`;
           console.log(`[Deep ALPHA] Fetching: ${fetchUrl}`);
           
           const response = await fetch(fetchUrl, {
             mode: 'cors',
-            credentials: isInternal ? 'include' : 'omit',
+            credentials: 'include', // Force include to leverage existing browser sessions
             headers: { 'Accept': 'application/json' }
           });
 
