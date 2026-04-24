@@ -454,7 +454,7 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(true);
 
   // Constants
-  const BUILD_TIME = "2026-04-23 17:15"; // Ultimate Bridge V23
+  const BUILD_TIME = "2026-04-24 09:20"; // Force-Open V24
 
   const syncData = async (ticker: string) => {
     setIsLoading(true);
@@ -468,7 +468,7 @@ export default function App() {
         ? 'https://ais-pre-jemxfwymhbfqgg3ycwaugd-313767379334.asia-northeast1.run.app'
         : '';
         
-      const healthCheck = await fetch(`${apiBase}/api/health/`, {
+      const healthCheck = await fetch(`${apiBase}/api/health?t=${Date.now()}`, {
         credentials: apiBase === '' ? 'include' : 'omit'
       });
       

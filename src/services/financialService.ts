@@ -32,16 +32,13 @@ export const financialService = {
       let lastError = null;
       for (const base of bases) {
         try {
-          const fetchUrl = `${base}/api/quote/${ticker}/?t=${Date.now()}`;
+          const fetchUrl = `${base}/api/quote/${ticker}?t=${Date.now()}`;
           console.log(`[Deep ALPHA] Fetching: ${fetchUrl}`);
           
           const response = await fetch(fetchUrl, {
             mode: 'cors',
             credentials: isInternal ? 'include' : 'omit',
-            // Simplified headers to avoid triggering complex IAP/CORS checks
-            headers: isInternal 
-              ? { 'Accept': 'application/json', 'Cache-Control': 'no-cache' }
-              : { 'Accept': 'application/json' }
+            headers: { 'Accept': 'application/json' }
           });
 
           if (response.redirected || response.status === 302) {

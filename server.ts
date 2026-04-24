@@ -37,35 +37,30 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // --- ULTIMATE DYNAMIC CORS ---
-  app.use((req, res, next) => {
-    // Dynamically echo the origin to satisfy browsers' strict CORS rules
-    const origin = req.headers.origin || '*';
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Accept, Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    
-    // Total Cache Clean
-    res.setHeader('Cache-Control', 'no-store, max-age=0');
-    
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    next();
-  });
+  // --- PRODUCTION GRADE CORS (V24) ---
+  app.use(cors({
+    origin: (origin, callback) => {
+      // Allow all origins to enable public access from GitHub Pages
+      callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cache-Control']
+  }));
 
   // API Route: Health Check
-  app.get("/api/health/", (req, res) => {
-    console.log(`[HEALTH CHECK] Origin: ${req.headers.origin} | Host: ${req.headers.host}`);
+  app.get("/api/health", (req, res) => {
+    console.log(`[HEALTH] Host: ${req.headers.host} | Origin: ${req.headers.origin}`);
     res.json({ 
       status: "ok", 
       timestamp: new Date().toISOString(),
       libInitialized: !!yahooFinance,
-      build: "1.9.0-V20-TRANSPARENT"
+      build: "2.0.0-V24-OPEN"
     });
   });
 
   // API Route: Real-time Quote Proxy
-  app.get("/api/quote/:ticker/", async (req, res) => {
+  app.get("/api/quote/:ticker", async (req, res) => {
     const { ticker } = req.params;
     try {
       const tickerUpper = (ticker || "").toString().toUpperCase();
@@ -97,7 +92,7 @@ async function startServer() {
         previousClose: result.regularMarketPreviousClose,
         name: result.longName || result.shortName || tickerUpper,
         source: 'YAHOO_FINANCE',
-        version: '1.9.0-V20-TRANSPARENT',
+        version: '2.0.0-V24-OPEN',
         timestamp: new Date().toISOString(),
         marketState: result.marketState,
         rawResponse: {
